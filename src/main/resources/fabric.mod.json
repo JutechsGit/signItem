@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "signitem",
+  "version": "${version}",
+  "name": "signItem",
+  "description": "A simple command to sign items O:",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/signitem/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "de.jutechs.signitem.Main"
+    ]
+  },
+  "mixins": [
+    "signitem.mixins.json",
+    {
+      "config": "signitem.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
