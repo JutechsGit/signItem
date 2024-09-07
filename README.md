@@ -37,4 +37,4 @@ If you want to contribute to this mod or build it from source:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/MySignMod.git
+   git clone https://github.com/JutechsGit/signItem.git
