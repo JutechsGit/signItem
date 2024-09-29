@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class Main implements ModInitializer {
@@ -25,6 +26,7 @@ public class Main implements ModInitializer {
             );
         });
     }
+
     private int signItem(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
         var player = source.getPlayer();
@@ -36,17 +38,23 @@ public class Main implements ModInitializer {
             return Command.SINGLE_SUCCESS;
         }
 
-        // Access the custom lore component
-
-        // LoreComponent lore = itemStack.get(DataComponentTypes.LORE);
-        // lore.with(Text.literal("Signed by " + source.getPlayer().getName().getString()));
-
-        //Insert lore into item
+        // Check if the item is already signed
         if (itemStack.get(DataComponentTypes.LORE).toString().contains("Signed")) {
-            player.sendMessage(Text.literal("This Item is already signed. You can't sign it again!").formatted(Formatting.RED), false);
+            player.sendMessage(Text.literal("This item is already signed. You can't sign it again!").formatted(Formatting.RED), false);
             return Command.SINGLE_SUCCESS;
         } else {
-            itemStack.set(DataComponentTypes.LORE, new LoreComponent(List.of(Text.literal("Signed by " + source.getPlayer().getName().getString()).formatted(Formatting.GOLD))));
+            // Get the current date
+            LocalDate currentDate = LocalDate.now();
+            String dateString = currentDate.toString(); // Format as "YYYY-MM-DD"
+
+            // Add the signature and date to the lore
+            itemStack.set(DataComponentTypes.LORE, new LoreComponent(List.of(
+                    Text.literal("Signed by ")
+                            .formatted(Formatting.GOLD)
+                            .append(Text.literal(player.getName().getString()).formatted(Formatting.YELLOW))
+                            .append(Text.literal(" on ").formatted(Formatting.GOLD))
+                            .append(Text.literal(dateString).formatted(Formatting.YELLOW))
+            )));
 
             // Send confirmation to the player
             player.sendMessage(Text.literal("Item signed successfully!").formatted(Formatting.GREEN), false);
@@ -54,5 +62,4 @@ public class Main implements ModInitializer {
             return Command.SINGLE_SUCCESS;
         }
     }
-
 }
