@@ -16,6 +16,8 @@ import net.minecraft.util.Formatting;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+
 public class Main implements ModInitializer {
 
     @Override
@@ -23,6 +25,12 @@ public class Main implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("sign")
                     .executes(context -> signItem(context))
+            );
+        });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("unsign")
+                    .executes(context -> unSignItem(context))
             );
         });
     }
@@ -35,13 +43,13 @@ public class Main implements ModInitializer {
         // Ensure the player is holding an item
         if (itemStack.isEmpty()) {
             player.sendMessage(Text.literal("You must hold an item to sign it!").formatted(Formatting.RED), false);
-            return Command.SINGLE_SUCCESS;
+            return SINGLE_SUCCESS;
         }
 
         // Check if the item is already signed
-        if (itemStack.get(DataComponentTypes.LORE).toString().contains("Signed")) {
+        if (itemStack.get(DataComponentTypes.LORE).toString().contains("Signed") && !itemStack.get(DataComponentTypes.LORE).toString().contains(player.getName().toString())) {
             player.sendMessage(Text.literal("This item is already signed. You can't sign it again!").formatted(Formatting.RED), false);
-            return Command.SINGLE_SUCCESS;
+            return SINGLE_SUCCESS;
         } else {
             // Get the current date
             LocalDate currentDate = LocalDate.now();
@@ -59,7 +67,36 @@ public class Main implements ModInitializer {
             // Send confirmation to the player
             player.sendMessage(Text.literal("Item signed successfully!").formatted(Formatting.GREEN), false);
 
-            return Command.SINGLE_SUCCESS;
+            return SINGLE_SUCCESS;
+        }
+    }
+    private int unSignItem(CommandContext<ServerCommandSource> context){
+        ServerCommandSource source = context.getSource();
+        var player = source.getPlayer();
+        ItemStack itemStack = player.getMainHandStack();
+
+        // Ensure the player is holding an item
+        if (itemStack.isEmpty()) {
+            player.sendMessage(Text.literal("You must hold an item to unsign it!").formatted(Formatting.RED), false);
+            return SINGLE_SUCCESS;
+        }
+
+        // Check if the item is already signed
+        if (!itemStack.get(DataComponentTypes.LORE).toString().contains("Signed") && !itemStack.get(DataComponentTypes.LORE).toString().contains(player.getName().toString())) {
+            player.sendMessage(Text.literal("Item is either not signed or not signed by you!").formatted(Formatting.RED), false);
+            return SINGLE_SUCCESS;
+        } else {
+
+            itemStack.set(DataComponentTypes.LORE, new LoreComponent(List.of(
+                    Text.literal("")
+            )));
+
+            // Send confirmation to the player
+            player.sendMessage(Text.literal("Item unsigned successfully!").formatted(Formatting.GREEN), false);
+
+
+
+        return SINGLE_SUCCESS;
         }
     }
 }
