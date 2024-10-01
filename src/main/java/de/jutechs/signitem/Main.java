@@ -15,6 +15,7 @@ import net.minecraft.util.Formatting;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
@@ -38,6 +39,7 @@ public class Main implements ModInitializer {
     private int signItem(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
         var player = source.getPlayer();
+        assert player != null;
         ItemStack itemStack = player.getMainHandStack();
 
         // Ensure the player is holding an item
@@ -47,7 +49,7 @@ public class Main implements ModInitializer {
         }
 
         // Check if the item is already signed
-        if (itemStack.get(DataComponentTypes.LORE).toString().contains("Signed") && !itemStack.get(DataComponentTypes.LORE).toString().contains(player.getName().toString())) {
+        if (Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).toString().contains("Signed") && !itemStack.get(DataComponentTypes.LORE).toString().contains(player.getName().toString())) {
             player.sendMessage(Text.literal("This item is already signed. You can't sign it again!").formatted(Formatting.RED), false);
             return SINGLE_SUCCESS;
         } else {
@@ -73,6 +75,7 @@ public class Main implements ModInitializer {
     private int unSignItem(CommandContext<ServerCommandSource> context){
         ServerCommandSource source = context.getSource();
         var player = source.getPlayer();
+        assert player != null;
         ItemStack itemStack = player.getMainHandStack();
 
         // Ensure the player is holding an item
@@ -82,21 +85,21 @@ public class Main implements ModInitializer {
         }
 
         // Check if the item is already signed
-        if (!itemStack.get(DataComponentTypes.LORE).toString().contains("Signed") && !itemStack.get(DataComponentTypes.LORE).toString().contains(player.getName().toString())) {
-            player.sendMessage(Text.literal("Item is either not signed or not signed by you!").formatted(Formatting.RED), false);
+        if (!Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).toString().contains("Signed")) {
+            player.sendMessage(Text.literal("This item is not signed!").formatted(Formatting.RED), false);
             return SINGLE_SUCCESS;
-        } else {
-
+        } else if (Objects.requireNonNull(itemStack.get(DataComponentTypes.LORE)).toString().contains(player.getName().toString())) {
             itemStack.set(DataComponentTypes.LORE, new LoreComponent(List.of(
                     Text.literal("")
             )));
 
             // Send confirmation to the player
             player.sendMessage(Text.literal("Item unsigned successfully!").formatted(Formatting.GREEN), false);
-
+            return SINGLE_SUCCESS;
+        }
+        player.sendMessage(Text.literal("This item is signed by another player!").formatted(Formatting.RED), false);
 
 
         return SINGLE_SUCCESS;
-        }
     }
 }
